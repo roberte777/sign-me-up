@@ -1,0 +1,16 @@
+app = "sign-me-up"
+primary_region = "iad" # Change to your preferred region
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 80
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+[mounts]
+  source = "sign_me_up_data"
+  destination = "/data" 
