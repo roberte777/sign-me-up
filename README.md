@@ -46,7 +46,7 @@ You need one of these, depending on how you want to set up the database.
 3. Initialize the development database using docker:
 
    ```bash
-   just init-db
+   just init-db-docker
    ```
 
    Alternatively, you can do this yourself if you installed sqlite:
