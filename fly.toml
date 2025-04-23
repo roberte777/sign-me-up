@@ -1,5 +1,5 @@
 app = "sign-me-up"
-primary_region = "iad" # Change to your preferred region
+primary_region = "atl" # Change to your preferred region
 
 [build]
   dockerfile = "Dockerfile"
