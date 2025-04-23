@@ -215,10 +215,13 @@ async fn create_group(
     State(pool): State<DbPool>,
     Json(group): Json<CreateGroupRequest>,
 ) -> Result<Json<Group>> {
+    // Start a transaction
+    let mut tx = pool.begin().await.map_err(AppError::Database)?;
+
     // Check if the event exists
     let event_exists = sqlx::query("SELECT 1 FROM events WHERE id = ?")
         .bind(&group.event_id)
-        .fetch_optional(&pool)
+        .fetch_optional(&mut *tx)
         .await
         .map_err(AppError::Database)?
         .is_some();
@@ -227,6 +230,21 @@ async fn create_group(
         return Err(AppError::NotFound(format!(
             "Event with ID {} not found",
             group.event_id
+        )));
+    }
+
+    // Get the event to check group size limit
+    let event = sqlx::query_as::<_, Event>("SELECT * FROM events WHERE id = ?")
+        .bind(&group.event_id)
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(AppError::Database)?;
+
+    // Check if the new member count would exceed the group size limit
+    if group.members.len() as i64 > event.group_size_limit {
+        return Err(AppError::BadRequest(format!(
+            "Group size cannot exceed the event limit of {} members",
+            event.group_size_limit
         )));
     }
 
@@ -242,23 +260,26 @@ async fn create_group(
     .bind(&group.group_name)
     .bind(group.accepts_others)
     .bind(&group.project_description)
-    .fetch_one(&pool)
+    .fetch_one(&mut *tx)
     .await
     .map_err(AppError::Database)?;
 
-    // Also add the creator as the first group member
+    // Add members
     for member in group.members {
         sqlx::query(
             "INSERT INTO group_members (group_id, name, email) 
-         VALUES (?, ?, ?)",
+             VALUES (?, ?, ?)",
         )
         .bind(result.id)
         .bind(&member.name)
         .bind(&member.email)
-        .execute(&pool)
+        .execute(&mut *tx)
         .await
         .map_err(AppError::Database)?;
     }
+
+    // Commit the transaction
+    tx.commit().await.map_err(AppError::Database)?;
 
     Ok(Json(result))
 }
@@ -301,7 +322,7 @@ async fn update_group(
         .await
         .map_err(AppError::Database)?;
 
-    match group {
+    let group = match group {
         Some(g) => g,
         None => {
             return Err(AppError::NotFound(format!(
@@ -310,6 +331,21 @@ async fn update_group(
             )));
         }
     };
+
+    // Get the event to check group size limit
+    let event = sqlx::query_as::<_, Event>("SELECT * FROM events WHERE id = ?")
+        .bind(&group.event_id)
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(AppError::Database)?;
+
+    // Check if the new member count would exceed the group size limit
+    if update.members.len() as i64 > event.group_size_limit {
+        return Err(AppError::BadRequest(format!(
+            "Group size cannot exceed the event limit of {} members",
+            event.group_size_limit
+        )));
+    }
 
     // Update the group details
     let updated_group = sqlx::query_as::<_, Group>(
@@ -477,10 +513,13 @@ async fn create_member(
     State(pool): State<DbPool>,
     Json(member): Json<CreateMemberRequest>,
 ) -> Result<Json<GroupMember>> {
+    // Start a transaction
+    let mut tx = pool.begin().await.map_err(AppError::Database)?;
+
     // Check if the group exists
     let group = sqlx::query_as::<_, Group>("SELECT * FROM groups WHERE id = ?")
         .bind(member.group_id)
-        .fetch_optional(&pool)
+        .fetch_optional(&mut *tx)
         .await
         .map_err(AppError::Database)?
         .ok_or_else(|| {
@@ -498,20 +537,20 @@ async fn create_member(
     // Get the event to check group size limit
     let event = sqlx::query_as::<_, Event>("SELECT * FROM events WHERE id = ?")
         .bind(&group.event_id)
-        .fetch_one(&pool)
+        .fetch_one(&mut *tx)
         .await
         .map_err(AppError::Database)?;
 
     // Count current group members
     let member_count: i64 = sqlx::query("SELECT COUNT(*) FROM group_members WHERE group_id = ?")
         .bind(member.group_id)
-        .fetch_one(&pool)
+        .fetch_one(&mut *tx)
         .await
         .map_err(AppError::Database)?
         .get(0);
 
     // Check if adding another member would exceed the limit
-    if member_count >= event.group_size_limit {
+    if member_count > event.group_size_limit {
         return Err(AppError::BadRequest(format!(
             "Group size limit of {} has been reached",
             event.group_size_limit
@@ -527,9 +566,12 @@ async fn create_member(
     .bind(member.group_id)
     .bind(&member.name)
     .bind(&member.email)
-    .fetch_one(&pool)
+    .fetch_one(&mut *tx)
     .await
     .map_err(AppError::Database)?;
+
+    // Commit the transaction
+    tx.commit().await.map_err(AppError::Database)?;
 
     Ok(Json(result))
 }
