@@ -12,5 +12,5 @@ primary_region = "iad" # Change to your preferred region
   min_machines_running = 0
 
 [mounts]
-  source = "sign_me_up_data"
+  source = "data"
   destination = "/data" 
