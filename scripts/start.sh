@@ -1,6 +1,14 @@
 #!/bin/bash
 set -e
 
+# Check if the database exists
+if [ ! -f /data/events.db ]; then
+    echo "Initializing database..."
+    sqlite3 /data/events.db < /app/schema.sql
+    # Set proper permissions
+    chown -R www-data:www-data /data
+fi
+
 # Test nginx configuration
 echo "Testing Nginx configuration..."
 nginx -t
