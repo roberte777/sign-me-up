@@ -247,16 +247,18 @@ async fn create_group(
     .map_err(AppError::Database)?;
 
     // Also add the creator as the first group member
-    sqlx::query(
-        "INSERT INTO group_members (group_id, name, email) 
+    for member in group.members {
+        sqlx::query(
+            "INSERT INTO group_members (group_id, name, email) 
          VALUES (?, ?, ?)",
-    )
-    .bind(result.id)
-    .bind(&result.creator_name)
-    .bind(&result.creator_email)
-    .execute(&pool)
-    .await
-    .map_err(AppError::Database)?;
+        )
+        .bind(result.id)
+        .bind(&member.name)
+        .bind(&member.email)
+        .execute(&pool)
+        .await
+        .map_err(AppError::Database)?;
+    }
 
     Ok(Json(result))
 }

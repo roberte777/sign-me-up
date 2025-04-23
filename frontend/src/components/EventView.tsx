@@ -65,6 +65,7 @@ export function EventView() {
   const handleRegisterGroup = async (values: GroupFormValues) => {
     setIsLoading(true);
     try {
+      console.log(values);
       const groupData: CreateGroupData = {
         ...values,
         event_id: eventId,

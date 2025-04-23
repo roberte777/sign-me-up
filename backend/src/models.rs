@@ -46,6 +46,13 @@ pub struct CreateGroupRequest {
     pub group_name: String,
     pub accepts_others: bool,
     pub project_description: Option<String>,
+    pub members: Vec<MembersForCreateGroupRequest>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MembersForCreateGroupRequest {
+    pub name: String,
+    pub email: Option<String>,
 }
 
 // Group member model
