@@ -288,59 +288,79 @@ async fn get_group(
 
 async fn update_group(
     State(pool): State<DbPool>,
-    Path(id): Path<i64>,
-    Json(group): Json<CreateGroupRequest>,
-) -> Result<Json<Group>> {
+    Path(group_id): Path<i64>,
+    Json(update): Json<UpdateGroupRequest>,
+) -> Result<Json<GroupWithMembers>> {
+    // Start a transaction
+    let mut tx = pool.begin().await.map_err(AppError::Database)?;
+
     // Check if the group exists
-    let group_exists = sqlx::query("SELECT 1 FROM groups WHERE id = ?")
-        .bind(id)
-        .fetch_optional(&pool)
+    let group = sqlx::query_as::<_, Group>("SELECT * FROM groups WHERE id = ?")
+        .bind(group_id)
+        .fetch_optional(&mut *tx)
         .await
-        .map_err(AppError::Database)?
-        .is_some();
+        .map_err(AppError::Database)?;
 
-    if !group_exists {
-        return Err(AppError::NotFound(format!(
-            "Group with ID {} not found",
-            id
-        )));
-    }
+    match group {
+        Some(g) => g,
+        None => {
+            return Err(AppError::NotFound(format!(
+                "Group with ID {} not found",
+                group_id
+            )));
+        }
+    };
 
-    // Check if the event exists
-    let event_exists = sqlx::query("SELECT 1 FROM events WHERE id = ?")
-        .bind(&group.event_id)
-        .fetch_optional(&pool)
-        .await
-        .map_err(AppError::Database)?
-        .is_some();
-
-    if !event_exists {
-        return Err(AppError::NotFound(format!(
-            "Event with ID {} not found",
-            group.event_id
-        )));
-    }
-
-    // Update the group
-    let result = sqlx::query_as::<_, Group>(
+    // Update the group details
+    let updated_group = sqlx::query_as::<_, Group>(
         "UPDATE groups 
-         SET event_id = ?, creator_name = ?, creator_email = ?, 
-             group_name = ?, accepts_others = ?, project_description = ?
-         WHERE id = ?
-         RETURNING *",
+         SET creator_name = ?, creator_email = ?, group_name = ?, accepts_others = ?, project_description = ? 
+         WHERE id = ? 
+         RETURNING *"
     )
-    .bind(&group.event_id)
-    .bind(&group.creator_name)
-    .bind(&group.creator_email)
-    .bind(&group.group_name)
-    .bind(group.accepts_others)
-    .bind(&group.project_description)
-    .bind(id)
-    .fetch_one(&pool)
+    .bind(&update.creator_name)
+    .bind(&update.creator_email)
+    .bind(&update.group_name)
+    .bind(update.accepts_others)
+    .bind(&update.project_description)
+    .bind(group_id)
+    .fetch_one(&mut *tx)
     .await
     .map_err(AppError::Database)?;
 
-    Ok(Json(result))
+    // Delete all existing members
+    sqlx::query("DELETE FROM group_members WHERE group_id = ?")
+        .bind(group_id)
+        .execute(&mut *tx)
+        .await
+        .map_err(AppError::Database)?;
+
+    // Add all new members
+    let mut new_members = Vec::with_capacity(update.members.len());
+    for member in update.members {
+        let new_member = sqlx::query_as::<_, GroupMember>(
+            "INSERT INTO group_members (group_id, name, email) 
+             VALUES (?, ?, ?) 
+             RETURNING *",
+        )
+        .bind(group_id)
+        .bind(&member.name)
+        .bind(&member.email)
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(AppError::Database)?;
+
+        new_members.push(new_member);
+    }
+
+    // Commit the transaction
+    tx.commit().await.map_err(AppError::Database)?;
+
+    // Return the updated group with its new members
+    Ok(Json(GroupWithMembers {
+        group: updated_group,
+        members: new_members,
+    }))
 }
 
 async fn delete_group(State(pool): State<DbPool>, Path(id): Path<i64>) -> Result<StatusCode> {

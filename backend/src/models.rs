@@ -50,6 +50,22 @@ pub struct CreateGroupRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateGroupRequest {
+    pub creator_name: String,
+    pub creator_email: String,
+    pub group_name: String,
+    pub accepts_others: bool,
+    pub project_description: Option<String>,
+    pub members: Vec<GroupMemberRequest>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GroupMemberRequest {
+    pub name: String,
+    pub email: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MembersForCreateGroupRequest {
     pub name: String,
     pub email: Option<String>,
