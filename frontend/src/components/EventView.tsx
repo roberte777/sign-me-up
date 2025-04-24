@@ -16,18 +16,167 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { EventAPI, GroupAPI, Event, Group, CreateGroupData } from "@/lib/api";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  EventAPI,
+  GroupAPI,
+  type Event,
+  type Group,
+  type CreateGroupData,
+} from "@/lib/api";
 import { GroupForm } from "@/components/GroupForm";
-import { CalendarDays, ChevronRight, MapPin, Users } from "lucide-react";
-import { GroupFormValues } from "@/lib/schemas";
+import type { GroupFormValues } from "@/lib/schemas";
+import {
+  CalendarDays,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Edit,
+  List,
+  ListFilter,
+  LayoutGrid,
+  MapPin,
+  Users,
+  Briefcase,
+  Search,
+} from "lucide-react";
+
+// Custom accordion component for group display
+function GroupAccordion({
+  group,
+  isOpen,
+  onToggle,
+  onEdit,
+}: {
+  group: Group;
+  isOpen: boolean;
+  onToggle: () => void;
+  onEdit: () => void;
+}) {
+  return (
+    <div className="border rounded-lg overflow-hidden mb-4">
+      {/* Accordion Header - entire header is clickable */}
+      <div
+        className="bg-muted/30 p-4 flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors"
+        onClick={onToggle}
+      >
+        <div className="flex items-center gap-3">
+          <Badge
+            variant="outline"
+            className={
+              group.accepts_others
+                ? "bg-green-500/10 text-green-500 border-green-500/20"
+                : "bg-orange-500/10 text-orange-500 border-orange-500/20"
+            }
+          >
+            {group.accepts_others ? "Open" : "Closed"}
+          </Badge>
+          <h3 className="font-medium">{group.group_name}</h3>
+          <span className="text-sm text-muted-foreground">
+            {group.members.length} members
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent accordion toggle when clicking edit
+              onEdit();
+            }}
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            Edit
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent double toggle
+              onToggle();
+            }}
+          >
+            <ChevronDown
+              className={`h-4 w-4 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+            />
+            <span className="sr-only">Toggle group details</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Accordion Content */}
+      <div
+        className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${
+          isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="p-4 border-t bg-card">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <div className="text-sm text-muted-foreground mb-2">
+                Created by
+              </div>
+              <div className="flex items-center gap-2">
+                <Avatar className="h-6 w-6">
+                  <AvatarFallback>
+                    {group.creator_name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <span>{group.creator_name}</span>
+              </div>
+            </div>
+            {group.project_description && (
+              <div>
+                <div className="text-sm text-muted-foreground mb-2">
+                  Project
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Briefcase className="h-4 w-4 text-muted-foreground" />
+                  <span>{group.project_description}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <Separator className="my-4" />
+
+          <div>
+            <h4 className="text-sm font-medium mb-3">Members:</h4>
+            <div className="space-y-2">
+              {group.members.map((member, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between py-1 px-2 rounded-md hover:bg-muted/50"
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-7 w-7">
+                      <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <span>{member.name}</span>
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {member.email || "-"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function EventView() {
   const { eventId } = useParams({ from: "/event/$eventId" });
@@ -37,7 +186,15 @@ export function EventView() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("register");
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+
+  // UI enhancement states
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
+    {},
+  );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -56,7 +213,6 @@ export function EventView() {
   const fetchGroups = async () => {
     try {
       const groupsData = await GroupAPI.getGroups(eventId);
-      console.log(groupsData);
       setGroups(groupsData);
     } catch (error) {
       console.error("Failed to fetch groups:", error);
@@ -66,18 +222,18 @@ export function EventView() {
   const handleRegisterGroup = async (values: GroupFormValues) => {
     setIsLoading(true);
     try {
-      console.log(values);
       const groupData: CreateGroupData = {
         ...values,
         event_id: eventId,
       };
       await GroupAPI.createGroup(groupData);
       await fetchGroups();
-      setIsDialogOpen(false);
-      setActiveTab("participants");
+      // Set active tab to participants to ensure we're showing the groups
+      return true;
     } catch (error) {
       console.error("Failed to register group:", error);
       alert("Failed to register group. Please try again.");
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -107,6 +263,36 @@ export function EventView() {
     setIsDialogOpen(true);
   };
 
+  // Toggle expansion state for a group
+  const toggleGroupExpansion = (groupId: string) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [groupId]: !prev[groupId],
+    }));
+  };
+
+  // Check if a group is expanded
+  const isGroupExpanded = (groupId: string) => !!expandedGroups[groupId];
+
+  // Filter groups based on search and status
+  const filteredGroups = groups.filter((group) => {
+    const matchesSearch =
+      searchQuery === "" ||
+      group.group_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      group.creator_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (group.project_description &&
+        group.project_description
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()));
+
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "open" && group.accepts_others) ||
+      (statusFilter === "closed" && !group.accepts_others);
+
+    return matchesSearch && matchesStatus;
+  });
+
   if (!event) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -134,142 +320,286 @@ export function EventView() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Event Details Card */}
-      <Card className="border-none shadow-md bg-card/50 backdrop-blur-sm event-card">
-        <CardContent className="">
-          <div className="grid gap-6 md:grid-cols-2">
-            <div>
-              <h2 className="text-2xl font-bold mb-4">Test Event</h2>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                  <span>{formatDate(event.date_time)}</span>
+    <>
+      <div className="min-h-screen bg-gradient-to-b from-background to-background/90 flex flex-col">
+        <main className="container flex-1 py-6 space-y-8">
+          {/* Event Details Card */}
+          <Card className="border-none shadow-md bg-card/50 backdrop-blur-sm event-card">
+            <CardContent className="p-6">
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <h2 className="text-2xl font-bold mb-4">{event.name}</h2>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                      <span>{formatDate(event.date_time)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span>{event.location}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span>Maximum Group Size: {event.group_size_limit}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span>{event.location}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <span>Maximum Group Size: {event.group_size_limit}</span>
+                <div className="flex items-center justify-end">
+                  <Button
+                    size="lg"
+                    className="px-8"
+                    onClick={() => setIsRegisterModalOpen(true)}
+                  >
+                    Register a Group
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Tabs for Registration */}
+
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <h2 className="text-xl font-semibold">Registered Groups</h2>
+
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+              <div className="relative w-full md:w-80">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search groups..."
+                  className="pl-8 w-full"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <Select
+                defaultValue="all"
+                value={statusFilter}
+                onValueChange={setStatusFilter}
+              >
+                <SelectTrigger className="w-full sm:w-40">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="open">Open</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div className="flex items-center justify-end">
-              <Button size="lg" className="px-8">
-                Register a Group
-                <ChevronRight className="ml-2 h-4 w-4" />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm">
+                <ListFilter className="h-4 w-4 mr-2" />
+                More Filters
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Showing {filteredGroups.length} of {groups.length} groups
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant={viewMode === "grid" ? "default" : "outline"}
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setViewMode("grid")}
+              >
+                <LayoutGrid className="h-4 w-4" />
+                <span className="sr-only">Grid view</span>
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "default" : "outline"}
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setViewMode("list")}
+              >
+                <List className="h-4 w-4" />
+                <span className="sr-only">List view</span>
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="register">Register a Group</TabsTrigger>
-          <TabsTrigger value="participants">Registered Groups</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="register" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Register Your Group</CardTitle>
-              <CardDescription>
-                Fill out the form to register your group for this event
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {event && (
-                <GroupForm
-                  event={event}
-                  onSubmit={handleRegisterGroup}
-                  isLoading={isLoading}
+          {filteredGroups.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Users
+                  className="h-12 w-12 text-muted-foreground mb-4"
+                  strokeWidth={1.5}
                 />
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="participants" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Registered Groups</CardTitle>
-              <CardDescription>
-                All the groups registered for this event
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {groups.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">
-                  No groups have registered yet. Be the first!
+                <p className="text-muted-foreground text-center">
+                  {groups.length === 0
+                    ? "No groups have registered yet. Be the first!"
+                    : "No groups match your search criteria."}
                 </p>
-              ) : (
-                <div className="space-y-6">
-                  {groups.map((group) => (
-                    <Card key={group.id} className="overflow-hidden">
-                      <CardHeader className="bg-muted pb-2">
-                        <div className="flex justify-between items-center">
-                          <CardTitle className="text-xl">
-                            {group.group_name}
-                          </CardTitle>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditGroup(group)}
-                          >
-                            Edit Group
-                          </Button>
+                {groups.length === 0 && (
+                  <Button
+                    className="mt-4"
+                    onClick={() => setIsRegisterModalOpen(true)}
+                  >
+                    Register a Group
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ) : viewMode === "list" ? (
+            <div>
+              {filteredGroups.map((group) => (
+                <GroupAccordion
+                  key={group.id}
+                  group={group}
+                  isOpen={isGroupExpanded(group.id)}
+                  onToggle={() => toggleGroupExpansion(group.id)}
+                  onEdit={() => handleEditGroup(group)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredGroups.map((group) => (
+                <Card
+                  key={group.id}
+                  className="overflow-hidden h-full flex flex-col"
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <Badge
+                        variant="outline"
+                        className={
+                          group.accepts_others
+                            ? "bg-green-500/10 text-green-500 border-green-500/20 mb-2"
+                            : "bg-orange-500/10 text-orange-500 border-orange-500/20 mb-2"
+                        }
+                      >
+                        {group.accepts_others ? "Open" : "Closed"}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handleEditGroup(group)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <CardTitle className="text-xl">
+                      {group.group_name}
+                    </CardTitle>
+                    <CardDescription className="mt-1 flex items-center gap-1">
+                      <Users className="h-3.5 w-3.5" />
+                      <span>{group.members.length} members</span>
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4 flex-grow">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback>
+                            {group.creator_name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="text-xs text-muted-foreground">
+                            Created by
+                          </div>
+                          <div className="text-sm">{group.creator_name}</div>
                         </div>
-                        <CardDescription>
-                          <p>
-                            <strong>Created by:</strong> {group.creator_name}
-                          </p>
-                          {group.project_description && (
-                            <p>
-                              <strong>Project:</strong>{" "}
-                              {group.project_description}
-                            </p>
-                          )}
-                          <p>
-                            <strong>Status:</strong>{" "}
-                            {group.accepts_others
-                              ? "Open to new members"
-                              : "Closed"}
-                          </p>
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="pt-4">
-                        <h4 className="text-sm font-medium mb-2">
-                          Members ({group.members.length}):
-                        </h4>
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Name</TableHead>
-                              <TableHead>Email</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {group.members.map((member) => (
-                              <TableRow key={member.id}>
-                                <TableCell>{member.name}</TableCell>
-                                <TableCell>{member.email || "-"}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                      </div>
 
+                      {group.project_description && (
+                        <div>
+                          <div className="text-xs text-muted-foreground mb-1">
+                            Project
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Briefcase className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">
+                              {group.project_description}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">
+                          Members
+                        </div>
+                        <div className="flex -space-x-2 overflow-hidden">
+                          {group.members.slice(0, 3).map((member, i) => (
+                            <Avatar
+                              key={i}
+                              className="h-8 w-8 border-2 border-background"
+                            >
+                              <AvatarFallback>
+                                {member.name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                          ))}
+                          {group.members.length > 3 && (
+                            <div className="flex items-center justify-center h-8 w-8 rounded-full bg-muted text-xs font-medium">
+                              +{group.members.length - 3}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <div className="px-6 pb-4 pt-2 border-t mt-auto">
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      size="sm"
+                      onClick={() => toggleGroupExpansion(group.id)}
+                    >
+                      {isGroupExpanded(group.id)
+                        ? "Hide Details"
+                        : "View Details"}
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Pagination - only show if there are enough groups */}
+          {groups.length > 10 && (
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                Showing <span className="font-medium">1</span> to{" "}
+                <span className="font-medium">
+                  {Math.min(10, filteredGroups.length)}
+                </span>{" "}
+                of <span className="font-medium">{filteredGroups.length}</span>{" "}
+                groups
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button variant="outline" size="sm" disabled>
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+                <Button variant="outline" size="sm">
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </main>
+
+        <footer className="border-t py-4">
+          <div className="container flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">© 2023 Sign Me Up</p>
+            <Button variant="ghost" size="sm">
+              Need Help?
+            </Button>
+          </div>
+        </footer>
+      </div>
       {/* Edit Group Dialog */}
       <Dialog
         open={isDialogOpen && isEditMode}
@@ -281,7 +611,7 @@ export function EventView() {
           }
         }}
       >
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="sm:max-w-7xl">
           <DialogHeader>
             <DialogTitle>Edit Group</DialogTitle>
             <DialogDescription>Update your group information</DialogDescription>
@@ -296,6 +626,33 @@ export function EventView() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      {/* Register Group Modal */}
+      <Dialog
+        open={isRegisterModalOpen}
+        onOpenChange={(open) => {
+          setIsRegisterModalOpen(open);
+        }}
+      >
+        <DialogContent className="sm:max-w-7xl">
+          <DialogHeader>
+            <DialogTitle>Register a New Group</DialogTitle>
+            <DialogDescription>
+              Fill out the form to register your group for this event
+            </DialogDescription>
+          </DialogHeader>
+          {event && (
+            <GroupForm
+              event={event}
+              onSubmit={async (values) => {
+                await handleRegisterGroup(values);
+                setIsRegisterModalOpen(false);
+              }}
+              isLoading={isLoading}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
+//
