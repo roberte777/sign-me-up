@@ -324,8 +324,8 @@ export function EventView() {
       <div className="min-h-screen bg-gradient-to-b from-background to-background/90 flex flex-col">
         <main className="container flex-1 py-6 space-y-8">
           {/* Event Details Card */}
-          <Card className="border-none shadow-md bg-card/50 backdrop-blur-sm event-card">
-            <CardContent className="p-6">
+          <Card className="shadow-md bg-card/50 backdrop-blur-sm event-card">
+            <CardContent>
               <div className="grid gap-6 md:grid-cols-2">
                 <div>
                   <h2 className="text-2xl font-bold mb-4">{event.name}</h2>
@@ -389,39 +389,26 @@ export function EventView() {
                   <SelectItem value="closed">Closed</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <ListFilter className="h-4 w-4 mr-2" />
-                More Filters
-              </Button>
-              <p className="text-sm text-muted-foreground">
-                Showing {filteredGroups.length} of {groups.length} groups
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant={viewMode === "grid" ? "default" : "outline"}
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setViewMode("grid")}
-              >
-                <LayoutGrid className="h-4 w-4" />
-                <span className="sr-only">Grid view</span>
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "outline"}
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setViewMode("list")}
-              >
-                <List className="h-4 w-4" />
-                <span className="sr-only">List view</span>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "outline"}
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setViewMode("grid")}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                  <span className="sr-only">Grid view</span>
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "outline"}
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setViewMode("list")}
+                >
+                  <List className="h-4 w-4" />
+                  <span className="sr-only">List view</span>
+                </Button>
+              </div>
             </div>
           </div>
 
