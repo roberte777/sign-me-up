@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/table";
 import { EventAPI, GroupAPI, Event, Group, CreateGroupData } from "@/lib/api";
 import { GroupForm } from "@/components/GroupForm";
+import { CalendarDays, ChevronRight, MapPin, Users } from "lucide-react";
 import { GroupFormValues } from "@/lib/schemas";
 
 export function EventView() {
@@ -134,23 +135,35 @@ export function EventView() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{event.name}</CardTitle>
-          <CardDescription>
-            <div className="space-y-1">
-              <p>
-                <strong>Date:</strong> {formatDate(event.date_time)}
-              </p>
-              <p>
-                <strong>Location:</strong> {event.location}
-              </p>
-              <p>
-                <strong>Maximum Group Size:</strong> {event.group_size_limit}
-              </p>
+      {/* Event Details Card */}
+      <Card className="border-none shadow-md bg-card/50 backdrop-blur-sm event-card">
+        <CardContent className="">
+          <div className="grid gap-6 md:grid-cols-2">
+            <div>
+              <h2 className="text-2xl font-bold mb-4">Test Event</h2>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                  <span>{formatDate(event.date_time)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span>{event.location}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <span>Maximum Group Size: {event.group_size_limit}</span>
+                </div>
+              </div>
             </div>
-          </CardDescription>
-        </CardHeader>
+            <div className="flex items-center justify-end">
+              <Button size="lg" className="px-8">
+                Register a Group
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
