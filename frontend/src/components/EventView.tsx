@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams } from "@tanstack/react-router";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Card,
   CardContent,
@@ -39,11 +38,9 @@ import type { GroupFormValues } from "@/lib/schemas";
 import {
   CalendarDays,
   ChevronDown,
-  ChevronLeft,
   ChevronRight,
   Edit,
   List,
-  ListFilter,
   LayoutGrid,
   MapPin,
   Users,
@@ -191,7 +188,7 @@ export function EventView() {
 
   // UI enhancement states
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
+  const [expandedGroups, setExpandedGroups] = useState<Record<number, boolean>>(
     {},
   );
   const [searchQuery, setSearchQuery] = useState("");
@@ -265,7 +262,7 @@ export function EventView() {
   };
 
   // Toggle expansion state for a group
-  const toggleGroupExpansion = (groupId: string) => {
+  const toggleGroupExpansion = (groupId: number) => {
     setExpandedGroups((prev) => ({
       ...prev,
       [groupId]: !prev[groupId],
@@ -273,7 +270,7 @@ export function EventView() {
   };
 
   // Check if a group is expanded
-  const isGroupExpanded = (groupId: string) => !!expandedGroups[groupId];
+  const isGroupExpanded = (groupId: number) => !!expandedGroups[groupId];
 
   // Filter groups based on search and status
   const filteredGroups = groups.filter((group) => {
