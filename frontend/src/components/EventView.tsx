@@ -50,6 +50,7 @@ import {
   Briefcase,
   Search,
 } from "lucide-react";
+import { ScrollArea } from "./ui/scroll-area";
 
 // Custom accordion component for group display
 function GroupAccordion({
@@ -64,7 +65,7 @@ function GroupAccordion({
   onEdit: () => void;
 }) {
   return (
-    <div className="border rounded-lg overflow-hidden mb-4">
+    <div className="border rounded-lg mb-4">
       {/* Accordion Header - entire header is clickable */}
       <div
         className="bg-muted/30 p-4 flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors"
@@ -117,7 +118,7 @@ function GroupAccordion({
 
       {/* Accordion Content */}
       <div
-        className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`accordion-content overflow-scroll transition-all duration-300 ease-in-out ${
           isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
@@ -321,7 +322,7 @@ export function EventView() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-b from-background to-background/90 flex flex-col">
+      <div className="bg-gradient-to-b from-background to-background/90 flex flex-col">
         <main className="container flex-1 py-6 space-y-8">
           {/* Event Details Card */}
           <Card className="shadow-md bg-card/50 backdrop-blur-sm event-card">
@@ -358,8 +359,7 @@ export function EventView() {
             </CardContent>
           </Card>
 
-          {/* Tabs for Registration */}
-
+          {/* Groups Table */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <h2 className="text-xl font-semibold">Registered Groups</h2>
 
@@ -412,180 +412,137 @@ export function EventView() {
             </div>
           </div>
 
-          {filteredGroups.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Users
-                  className="h-12 w-12 text-muted-foreground mb-4"
-                  strokeWidth={1.5}
-                />
-                <p className="text-muted-foreground text-center">
-                  {groups.length === 0
-                    ? "No groups have registered yet. Be the first!"
-                    : "No groups match your search criteria."}
-                </p>
-                {groups.length === 0 && (
-                  <Button
-                    className="mt-4"
-                    onClick={() => setIsRegisterModalOpen(true)}
+          <ScrollArea className="h-[calc(100vh-750px)] pr-3">
+            {filteredGroups.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <Users
+                    className="h-12 w-12 text-muted-foreground mb-4"
+                    strokeWidth={1.5}
+                  />
+                  <p className="text-muted-foreground text-center">
+                    {groups.length === 0
+                      ? "No groups have registered yet. Be the first!"
+                      : "No groups match your search criteria."}
+                  </p>
+                  {groups.length === 0 && (
+                    <Button
+                      className="mt-4"
+                      onClick={() => setIsRegisterModalOpen(true)}
+                    >
+                      Register a Group
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ) : viewMode === "list" ? (
+              <div>
+                {filteredGroups.map((group) => (
+                  <GroupAccordion
+                    key={group.id}
+                    group={group}
+                    isOpen={isGroupExpanded(group.id)}
+                    onToggle={() => toggleGroupExpansion(group.id)}
+                    onEdit={() => handleEditGroup(group)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredGroups.map((group) => (
+                  <Card
+                    key={group.id}
+                    className="overflow-hidden h-full flex flex-col"
                   >
-                    Register a Group
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ) : viewMode === "list" ? (
-            <div>
-              {filteredGroups.map((group) => (
-                <GroupAccordion
-                  key={group.id}
-                  group={group}
-                  isOpen={isGroupExpanded(group.id)}
-                  onToggle={() => toggleGroupExpansion(group.id)}
-                  onEdit={() => handleEditGroup(group)}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredGroups.map((group) => (
-                <Card
-                  key={group.id}
-                  className="overflow-hidden h-full flex flex-col"
-                >
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
-                      <Badge
-                        variant="outline"
-                        className={
-                          group.accepts_others
-                            ? "bg-green-500/10 text-green-500 border-green-500/20 mb-2"
-                            : "bg-orange-500/10 text-orange-500 border-orange-500/20 mb-2"
-                        }
-                      >
-                        {group.accepts_others ? "Open" : "Closed"}
-                      </Badge>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => handleEditGroup(group)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <CardTitle className="text-xl">
-                      {group.group_name}
-                    </CardTitle>
-                    <CardDescription className="mt-1 flex items-center gap-1">
-                      <Users className="h-3.5 w-3.5" />
-                      <span>{group.members.length} members</span>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pb-4 flex-grow">
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-6 w-6">
-                          <AvatarFallback>
-                            {group.creator_name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="text-xs text-muted-foreground">
-                            Created by
-                          </div>
-                          <div className="text-sm">{group.creator_name}</div>
-                        </div>
+                    <CardHeader className="pb-3">
+                      <div className="flex justify-between items-start">
+                        <Badge
+                          variant="outline"
+                          className={
+                            group.accepts_others
+                              ? "bg-green-500/10 text-green-500 border-green-500/20 mb-2"
+                              : "bg-orange-500/10 text-orange-500 border-orange-500/20 mb-2"
+                          }
+                        >
+                          {group.accepts_others ? "Open" : "Closed"}
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleEditGroup(group)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
                       </div>
+                      <CardTitle className="text-xl">
+                        {group.group_name}
+                      </CardTitle>
+                      <CardDescription className="mt-1 flex items-center gap-1">
+                        <Users className="h-3.5 w-3.5" />
+                        <span>{group.members.length} members</span>
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pb-4 flex-grow">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-6 w-6">
+                            <AvatarFallback>
+                              {group.creator_name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="text-xs text-muted-foreground">
+                              Created by
+                            </div>
+                            <div className="text-sm">{group.creator_name}</div>
+                          </div>
+                        </div>
 
-                      {group.project_description && (
+                        {group.project_description && (
+                          <div>
+                            <div className="text-xs text-muted-foreground mb-1">
+                              Project
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Briefcase className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">
+                                {group.project_description}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
                         <div>
                           <div className="text-xs text-muted-foreground mb-1">
-                            Project
+                            Members
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <Briefcase className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">
-                              {group.project_description}
-                            </span>
+                          <div className="flex -space-x-2 overflow-hidden">
+                            {group.members.slice(0, 3).map((member, i) => (
+                              <Avatar
+                                key={i}
+                                className="h-8 w-8 border-2 border-background"
+                              >
+                                <AvatarFallback>
+                                  {member.name.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                            ))}
+                            {group.members.length > 3 && (
+                              <div className="flex items-center justify-center h-8 w-8 rounded-full bg-muted text-xs font-medium">
+                                +{group.members.length - 3}
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      )}
-
-                      <div>
-                        <div className="text-xs text-muted-foreground mb-1">
-                          Members
-                        </div>
-                        <div className="flex -space-x-2 overflow-hidden">
-                          {group.members.slice(0, 3).map((member, i) => (
-                            <Avatar
-                              key={i}
-                              className="h-8 w-8 border-2 border-background"
-                            >
-                              <AvatarFallback>
-                                {member.name.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                          ))}
-                          {group.members.length > 3 && (
-                            <div className="flex items-center justify-center h-8 w-8 rounded-full bg-muted text-xs font-medium">
-                              +{group.members.length - 3}
-                            </div>
-                          )}
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                  <div className="px-6 pb-4 pt-2 border-t mt-auto">
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      size="sm"
-                      onClick={() => toggleGroupExpansion(group.id)}
-                    >
-                      {isGroupExpanded(group.id)
-                        ? "Hide Details"
-                        : "View Details"}
-                    </Button>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-
-          {/* Pagination - only show if there are enough groups */}
-          {groups.length > 10 && (
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
-                Showing <span className="font-medium">1</span> to{" "}
-                <span className="font-medium">
-                  {Math.min(10, filteredGroups.length)}
-                </span>{" "}
-                of <span className="font-medium">{filteredGroups.length}</span>{" "}
-                groups
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm" disabled>
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  Previous
-                </Button>
-                <Button variant="outline" size="sm">
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </div>
-            </div>
-          )}
+            )}
+          </ScrollArea>
         </main>
-
-        <footer className="border-t py-4">
-          <div className="container flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">© 2023 Sign Me Up</p>
-            <Button variant="ghost" size="sm">
-              Need Help?
-            </Button>
-          </div>
-        </footer>
       </div>
       {/* Edit Group Dialog */}
       <Dialog
