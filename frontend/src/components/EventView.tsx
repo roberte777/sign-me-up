@@ -356,7 +356,9 @@ export function EventView() {
 
           {/* Groups Table */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <h2 className="text-xl font-semibold">Registered Groups</h2>
+            <h2 className="hidden sm:block text-xl font-semibold">
+              Registered Groups
+            </h2>
 
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
               <div className="relative w-full md:w-80">
@@ -409,7 +411,7 @@ export function EventView() {
             </div>
           </div>
 
-          <ScrollArea className="h-[calc(100vh-750px)] pr-3">
+          <ScrollArea className="h-[calc(100vh-650px)] pr-3">
             {filteredGroups.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
