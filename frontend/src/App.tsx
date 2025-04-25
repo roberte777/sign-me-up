@@ -3,7 +3,7 @@ import { Outlet } from "@tanstack/react-router";
 function App() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-gradient-to-r from-purple-900/20 to-indigo-900/20 backdrop-blur-sm">
+      <header className="px-2 sm:px-0 border-b bg-gradient-to-r from-purple-900/20 to-indigo-900/20 backdrop-blur-sm">
         <div className="container mx-auto py-6 flex items-center gap-3">
           <div className="bg-gradient-to-br from-purple-500 to-indigo-600 p-1 rounded-xl shadow-lg">
             <img src="/favicon.png" className="size-12" />
@@ -18,7 +18,7 @@ function App() {
           </div>
         </div>
       </header>
-      <main className="container mx-auto py-6">
+      <main className="container mx-auto py-6 px-2">
         <Outlet />
       </main>
     </div>
