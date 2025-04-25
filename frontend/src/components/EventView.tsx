@@ -411,7 +411,7 @@ export function EventView() {
             </div>
           </div>
 
-          <ScrollArea className="h-[calc(100vh-650px)] pr-3">
+          <ScrollArea className="h-[calc(100vh-600px)] pr-3 overflow-hidden">
             {filteredGroups.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
