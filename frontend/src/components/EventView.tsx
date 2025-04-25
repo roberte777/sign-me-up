@@ -550,7 +550,7 @@ export function EventView() {
           }
         }}
       >
-        <DialogContent className="sm:max-w-7xl">
+        <DialogContent className="sm:max-w-7xl max-h-[80vh] overflow-scroll">
           <DialogHeader>
             <DialogTitle>Edit Group</DialogTitle>
             <DialogDescription>Update your group information</DialogDescription>
@@ -572,7 +572,7 @@ export function EventView() {
           setIsRegisterModalOpen(open);
         }}
       >
-        <DialogContent className="sm:max-w-7xl">
+        <DialogContent className="sm:max-w-7xl max-h-[80vh] overflow-scroll">
           <DialogHeader>
             <DialogTitle>Register a New Group</DialogTitle>
             <DialogDescription>
