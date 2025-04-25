@@ -61,7 +61,7 @@ export function GroupForm({
           group_name: "",
           accepts_others: false,
           project_description: "",
-          members: [],
+          members: [{ name: "", email: "" }],
         },
   });
 
@@ -114,10 +114,10 @@ export function GroupForm({
                 render={({ field }) => (
                   <FormItem className="grid gap-2">
                     <FormLabel className="font-medium">
-                      Your Name <span className="text-destructive">*</span>
+                      Contact Name <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your name" {...field} />
+                      <Input placeholder="Enter contact name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -130,12 +130,12 @@ export function GroupForm({
                 render={({ field }) => (
                   <FormItem className="grid gap-2">
                     <FormLabel className="font-medium">
-                      Your Email <span className="text-destructive">*</span>
+                      Contact Email <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="Enter your email"
+                        placeholder="Enter contact email"
                         {...field}
                       />
                     </FormControl>
@@ -214,33 +214,26 @@ export function GroupForm({
             </div>
 
             {/* Group Leader Card */}
-            <Card className="p-4 border bg-muted/40">
-              <div className="flex items-center gap-3 mb-2">
-                <User className="h-5 w-5 text-primary" />
-                <div className="font-medium">
-                  {form.watch("creator_name") || "You"} (Group Leader)
-                </div>
-              </div>
-              <div className="text-sm text-muted-foreground pl-8">
-                {form.watch("creator_email") || "Your email will appear here"}
-              </div>
-            </Card>
 
             {/* Member Cards */}
             {fields.map((field, index) => (
               <Card key={field.id} className="p-4 border">
                 <div className="flex items-center justify-between mb-4">
-                  {/*using index + 2 becuase the group leader is not put into the members list until the form is submitted*/}
-                  <div className="font-medium">Member {index + 2}</div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleRemoveMember(index)}
-                  >
-                    <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-                    <span className="sr-only">Remove member</span>
-                  </Button>
+                  <div className="font-medium flex space-x-2">
+                    <User className="h-5 w-5 text-primary" />
+                    <span>Member {index + 1}</span>
+                  </div>
+                  {index > 0 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveMember(index)}
+                    >
+                      <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                      <span className="sr-only">Remove member</span>
+                    </Button>
+                  )}
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
