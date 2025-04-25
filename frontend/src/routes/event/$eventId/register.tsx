@@ -4,24 +4,7 @@ import { CreateGroupData, EventAPI, GroupAPI, type Event } from "@/lib/api";
 import { GroupForm } from "@/components/GroupForm";
 import { GroupFormValues } from "@/lib/schemas";
 import { ArrowLeftIcon } from "lucide-react";
-
-const formatDate = (dateString: string) => {
-  try {
-    const date = new Date(dateString);
-    // Check if date is valid
-    if (isNaN(date.getTime())) {
-      return "Invalid date";
-    }
-    // Format the date using Intl.DateTimeFormat for better localization
-    return new Intl.DateTimeFormat("default", {
-      dateStyle: "full",
-      timeStyle: "short",
-    }).format(date);
-  } catch (error) {
-    console.error("Error formatting date:", error);
-    return dateString; // Return original if parsing fails
-  }
-};
+import { formatDate } from "@/lib/utils";
 
 export const Route = createFileRoute("/event/$eventId/register")({
   component: RouteComponent,

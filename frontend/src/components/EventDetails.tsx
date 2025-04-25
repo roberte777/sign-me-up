@@ -18,29 +18,12 @@ import { GroupForm } from "./GroupForm";
 import { useState } from "react";
 import { GroupFormValues } from "@/lib/schemas";
 import { Link } from "@tanstack/react-router";
+import { formatDate } from "@/lib/utils";
 
 type EventDetailsProp = {
   event: Event;
   fetchGroups: () => Promise<void>;
   eventId: string;
-};
-
-const formatDate = (dateString: string) => {
-  try {
-    const date = new Date(dateString);
-    // Check if date is valid
-    if (isNaN(date.getTime())) {
-      return "Invalid date";
-    }
-    // Format the date using Intl.DateTimeFormat for better localization
-    return new Intl.DateTimeFormat("default", {
-      dateStyle: "full",
-      timeStyle: "short",
-    }).format(date);
-  } catch (error) {
-    console.error("Error formatting date:", error);
-    return dateString; // Return original if parsing fails
-  }
 };
 
 export function EventDetails({
