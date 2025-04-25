@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
 import { ArrowRight, Calendar, Clock, Users } from "lucide-react";
 
 export function Landing() {
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center items-center">
       <div className="space-y-6">
         <div className="space-y-2 sm:text-center">
           <h2 className="text-4xl font-bold tracking-tight">
@@ -55,10 +56,12 @@ export function Landing() {
         </div>
 
         <div className="text-center">
-          <Button className="w-full sm:w-fit bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-6 h-auto text-lg rounded-xl shadow-lg shadow-purple-700/30 transition-all hover:shadow-xl hover:shadow-purple-700/40">
-            Create Your Event
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
+          <Link to="/create">
+            <Button className="w-full sm:w-fit bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-6 h-auto text-lg rounded-xl shadow-lg shadow-purple-700/30 transition-all hover:shadow-xl hover:shadow-purple-700/40">
+              Create Your Event
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
