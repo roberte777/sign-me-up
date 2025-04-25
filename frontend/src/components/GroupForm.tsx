@@ -30,16 +30,6 @@ interface GroupFormProps {
   isLoading: boolean;
 }
 
-async function submitWrapper(
-  onSubmit: (values: GroupFormValues) => Promise<void>,
-) {
-  return async (values: GroupFormValues) => {
-    const leader = { name: values.creator_name, email: values.creator_email };
-    values.members.push(leader);
-    await onSubmit(values);
-  };
-}
-
 export function GroupForm({
   event,
   existingGroup,
