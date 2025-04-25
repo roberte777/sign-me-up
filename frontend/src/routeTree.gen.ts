@@ -13,7 +13,8 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as CreateImport } from './routes/create'
 import { Route as IndexImport } from './routes/index'
-import { Route as EventEventIdImport } from './routes/event.$eventId'
+import { Route as EventEventIdIndexImport } from './routes/event/$eventId/index'
+import { Route as EventEventIdRegisterImport } from './routes/event/$eventId/register'
 
 // Create/Update Routes
 
@@ -29,9 +30,15 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const EventEventIdRoute = EventEventIdImport.update({
-  id: '/event/$eventId',
-  path: '/event/$eventId',
+const EventEventIdIndexRoute = EventEventIdIndexImport.update({
+  id: '/event/$eventId/',
+  path: '/event/$eventId/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const EventEventIdRegisterRoute = EventEventIdRegisterImport.update({
+  id: '/event/$eventId/register',
+  path: '/event/$eventId/register',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -53,11 +60,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CreateImport
       parentRoute: typeof rootRoute
     }
-    '/event/$eventId': {
-      id: '/event/$eventId'
+    '/event/$eventId/register': {
+      id: '/event/$eventId/register'
+      path: '/event/$eventId/register'
+      fullPath: '/event/$eventId/register'
+      preLoaderRoute: typeof EventEventIdRegisterImport
+      parentRoute: typeof rootRoute
+    }
+    '/event/$eventId/': {
+      id: '/event/$eventId/'
       path: '/event/$eventId'
       fullPath: '/event/$eventId'
-      preLoaderRoute: typeof EventEventIdImport
+      preLoaderRoute: typeof EventEventIdIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -68,41 +82,51 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
-  '/event/$eventId': typeof EventEventIdRoute
+  '/event/$eventId/register': typeof EventEventIdRegisterRoute
+  '/event/$eventId': typeof EventEventIdIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
-  '/event/$eventId': typeof EventEventIdRoute
+  '/event/$eventId/register': typeof EventEventIdRegisterRoute
+  '/event/$eventId': typeof EventEventIdIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
-  '/event/$eventId': typeof EventEventIdRoute
+  '/event/$eventId/register': typeof EventEventIdRegisterRoute
+  '/event/$eventId/': typeof EventEventIdIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/create' | '/event/$eventId'
+  fullPaths: '/' | '/create' | '/event/$eventId/register' | '/event/$eventId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/create' | '/event/$eventId'
-  id: '__root__' | '/' | '/create' | '/event/$eventId'
+  to: '/' | '/create' | '/event/$eventId/register' | '/event/$eventId'
+  id:
+    | '__root__'
+    | '/'
+    | '/create'
+    | '/event/$eventId/register'
+    | '/event/$eventId/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CreateRoute: typeof CreateRoute
-  EventEventIdRoute: typeof EventEventIdRoute
+  EventEventIdRegisterRoute: typeof EventEventIdRegisterRoute
+  EventEventIdIndexRoute: typeof EventEventIdIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CreateRoute: CreateRoute,
-  EventEventIdRoute: EventEventIdRoute,
+  EventEventIdRegisterRoute: EventEventIdRegisterRoute,
+  EventEventIdIndexRoute: EventEventIdIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -117,7 +141,8 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/create",
-        "/event/$eventId"
+        "/event/$eventId/register",
+        "/event/$eventId/"
       ]
     },
     "/": {
@@ -126,8 +151,11 @@ export const routeTree = rootRoute
     "/create": {
       "filePath": "create.tsx"
     },
-    "/event/$eventId": {
-      "filePath": "event.$eventId.tsx"
+    "/event/$eventId/register": {
+      "filePath": "event/$eventId/register.tsx"
+    },
+    "/event/$eventId/": {
+      "filePath": "event/$eventId/index.tsx"
     }
   }
 }

@@ -17,6 +17,7 @@ import {
 import { GroupForm } from "./GroupForm";
 import { useState } from "react";
 import { GroupFormValues } from "@/lib/schemas";
+import { Link } from "@tanstack/react-router";
 
 type EventDetailsProp = {
   event: Event;
@@ -90,14 +91,12 @@ export function EventDetails({
             </div>
           </div>
           <div className="flex items-center sm:justify-end">
-            <Button
-              size="lg"
-              className="px-8 w-full sm:w-fit"
-              onClick={() => setIsRegisterModalOpen(true)}
-            >
-              Register a Group
-              <ChevronRightIcon className="ml-2 h-4 w-4" />
-            </Button>
+            <Link to="/event/$eventId/register" params={{ eventId: eventId }}>
+              <Button size="lg" className="px-8 w-full sm:w-fit">
+                Register a Group
+                <ChevronRightIcon className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>

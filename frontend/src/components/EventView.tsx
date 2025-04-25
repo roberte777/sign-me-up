@@ -27,7 +27,7 @@ import { EventDetails } from "./EventDetails";
 import { GroupCard } from "./GroupCard";
 
 export function EventView() {
-  const { eventId } = useParams({ from: "/event/$eventId" });
+  const { eventId } = useParams({ from: "/event/$eventId/" });
   const [event, setEvent] = useState<Event | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(false);
