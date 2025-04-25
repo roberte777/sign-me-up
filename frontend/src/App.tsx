@@ -18,7 +18,7 @@ function App() {
           </div>
         </div>
       </header>
-      <main className="container mx-auto py-6 px-2">
+      <main className="container mx-auto py-6 px-4 sm:px-0">
         <Outlet />
       </main>
     </div>
