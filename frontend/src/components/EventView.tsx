@@ -355,7 +355,7 @@ export function EventView() {
           </Card>
 
           {/* Groups Table */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h2 className="hidden sm:block text-xl font-semibold">
               Registered Groups
             </h2>
