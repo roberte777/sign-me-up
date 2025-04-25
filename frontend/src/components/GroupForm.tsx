@@ -89,11 +89,6 @@ export function GroupForm({
       <form
         onSubmit={form.handleSubmit(async (values) => {
           try {
-            const leader = {
-              name: values.creator_name,
-              email: values.creator_email,
-            };
-            values.members.push(leader);
             await onSubmit(values);
             // Only navigate on successful validation and submission
             navigate({ to: "/event/$eventId", params: { eventId: event.id } });
