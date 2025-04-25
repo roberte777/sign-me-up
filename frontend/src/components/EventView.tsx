@@ -1,12 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "@tanstack/react-router";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,158 +17,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  EventAPI,
-  GroupAPI,
-  type Event,
-  type Group,
-  type CreateGroupData,
-} from "@/lib/api";
+import { EventAPI, GroupAPI, type Event, type Group } from "@/lib/api";
 import { GroupForm } from "@/components/GroupForm";
 import type { GroupFormValues } from "@/lib/schemas";
-import {
-  CalendarDays,
-  ChevronDown,
-  ChevronRight,
-  Edit,
-  List,
-  LayoutGrid,
-  MapPin,
-  Users,
-  Briefcase,
-  Search,
-} from "lucide-react";
+import { List, LayoutGrid, Users, Search } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
-
-// Custom accordion component for group display
-function GroupAccordion({
-  group,
-  isOpen,
-  onToggle,
-  onEdit,
-}: {
-  group: Group;
-  isOpen: boolean;
-  onToggle: () => void;
-  onEdit: () => void;
-}) {
-  return (
-    <div className="border rounded-lg mb-4">
-      {/* Accordion Header - entire header is clickable */}
-      <div
-        className="bg-muted/30 p-4 flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors"
-        onClick={onToggle}
-      >
-        <div className="flex items-center gap-3">
-          <Badge
-            variant="outline"
-            className={
-              group.accepts_others
-                ? "bg-green-500/10 text-green-500 border-green-500/20"
-                : "bg-orange-500/10 text-orange-500 border-orange-500/20"
-            }
-          >
-            {group.accepts_others ? "Open" : "Closed"}
-          </Badge>
-          <h3 className="font-medium">{group.group_name}</h3>
-          <span className="text-sm text-muted-foreground">
-            {group.members.length} members
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent accordion toggle when clicking edit
-              onEdit();
-            }}
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            Edit
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent double toggle
-              onToggle();
-            }}
-          >
-            <ChevronDown
-              className={`h-4 w-4 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
-            />
-            <span className="sr-only">Toggle group details</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Accordion Content */}
-      <div
-        className={`accordion-content overflow-scroll transition-all duration-300 ease-in-out ${
-          isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-        }`}
-      >
-        <div className="p-4 border-t bg-card">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <div className="text-sm text-muted-foreground mb-2">
-                Created by
-              </div>
-              <div className="flex items-center gap-2">
-                <Avatar className="h-6 w-6">
-                  <AvatarFallback>
-                    {group.creator_name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <span>{group.creator_name}</span>
-              </div>
-            </div>
-            {group.project_description && (
-              <div>
-                <div className="text-sm text-muted-foreground mb-2">
-                  Project
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Briefcase className="h-4 w-4 text-muted-foreground" />
-                  <span>{group.project_description}</span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <Separator className="my-4" />
-
-          <div>
-            <h4 className="text-sm font-medium mb-3">Members:</h4>
-            <div className="space-y-2">
-              {group.members.map((member, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between py-1 px-2 rounded-md hover:bg-muted/50"
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-7 w-7">
-                      <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <span>{member.name}</span>
-                  </div>
-                  <span className="text-sm text-muted-foreground">
-                    {member.email || "-"}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+import { GroupAccordion } from "./GroupAccordion";
+import { EventDetails } from "./EventDetails";
+import { GroupCard } from "./GroupCard";
 
 export function EventView() {
   const { eventId } = useParams({ from: "/event/$eventId" });
@@ -184,7 +34,6 @@ export function EventView() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
   // UI enhancement states
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
@@ -193,6 +42,15 @@ export function EventView() {
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+
+  const fetchGroups = useCallback(async () => {
+    try {
+      const groupsData = await GroupAPI.getGroups(eventId);
+      setGroups(groupsData);
+    } catch (error) {
+      console.error("Failed to fetch groups:", error);
+    }
+  }, [eventId]);
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -206,36 +64,7 @@ export function EventView() {
     };
 
     fetchEventData();
-  }, [eventId]);
-
-  const fetchGroups = async () => {
-    try {
-      const groupsData = await GroupAPI.getGroups(eventId);
-      setGroups(groupsData);
-    } catch (error) {
-      console.error("Failed to fetch groups:", error);
-    }
-  };
-
-  const handleRegisterGroup = async (values: GroupFormValues) => {
-    setIsLoading(true);
-    try {
-      const groupData: CreateGroupData = {
-        ...values,
-        event_id: eventId,
-      };
-      await GroupAPI.createGroup(groupData);
-      await fetchGroups();
-      // Set active tab to participants to ensure we're showing the groups
-      return true;
-    } catch (error) {
-      console.error("Failed to register group:", error);
-      alert("Failed to register group. Please try again.");
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [eventId, fetchGroups]);
 
   const handleUpdateGroup = async (values: GroupFormValues) => {
     if (!selectedGroup) return;
@@ -298,61 +127,16 @@ export function EventView() {
       </div>
     );
   }
-
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      // Check if date is valid
-      if (isNaN(date.getTime())) {
-        return "Invalid date";
-      }
-      // Format the date using Intl.DateTimeFormat for better localization
-      return new Intl.DateTimeFormat("default", {
-        dateStyle: "full",
-        timeStyle: "short",
-      }).format(date);
-    } catch (error) {
-      console.error("Error formatting date:", error);
-      return dateString; // Return original if parsing fails
-    }
-  };
-
   return (
     <>
       <div className="bg-gradient-to-b from-background to-background/90 flex flex-col">
         <div className="container flex-1 sm:py-6 space-y-8">
           {/* Event Details Card */}
-          <Card className="shadow-md bg-card/50 backdrop-blur-sm event-card">
-            <CardContent className="flex flex-col space-y-3 sm:grid sm:gap-6 sm:grid-cols-2">
-              <div>
-                <h2 className="text-2xl font-bold mb-4">{event.name}</h2>
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center gap-2">
-                    <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                    <span>{formatDate(event.date_time)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span>{event.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <span>Maximum Group Size: {event.group_size_limit}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center sm:justify-end">
-                <Button
-                  size="lg"
-                  className="px-8 w-full sm:w-fit"
-                  onClick={() => setIsRegisterModalOpen(true)}
-                >
-                  Register a Group
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <EventDetails
+            eventId={eventId}
+            fetchGroups={fetchGroups}
+            event={event}
+          />
 
           {/* Groups Table */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -424,14 +208,6 @@ export function EventView() {
                       ? "No groups have registered yet. Be the first!"
                       : "No groups match your search criteria."}
                   </p>
-                  {groups.length === 0 && (
-                    <Button
-                      className="mt-4"
-                      onClick={() => setIsRegisterModalOpen(true)}
-                    >
-                      Register a Group
-                    </Button>
-                  )}
                 </CardContent>
               </Card>
             ) : viewMode === "list" ? (
@@ -449,94 +225,7 @@ export function EventView() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredGroups.map((group) => (
-                  <Card
-                    key={group.id}
-                    className="overflow-hidden h-full flex flex-col"
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start">
-                        <Badge
-                          variant="outline"
-                          className={
-                            group.accepts_others
-                              ? "bg-green-500/10 text-green-500 border-green-500/20 mb-2"
-                              : "bg-orange-500/10 text-orange-500 border-orange-500/20 mb-2"
-                          }
-                        >
-                          {group.accepts_others ? "Open" : "Closed"}
-                        </Badge>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleEditGroup(group)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <CardTitle className="text-xl">
-                        {group.group_name}
-                      </CardTitle>
-                      <CardDescription className="mt-1 flex items-center gap-1">
-                        <Users className="h-3.5 w-3.5" />
-                        <span>{group.members.length} members</span>
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pb-4 flex-grow">
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback>
-                              {group.creator_name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="text-xs text-muted-foreground">
-                              Created by
-                            </div>
-                            <div className="text-sm">{group.creator_name}</div>
-                          </div>
-                        </div>
-
-                        {group.project_description && (
-                          <div>
-                            <div className="text-xs text-muted-foreground mb-1">
-                              Project
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <Briefcase className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">
-                                {group.project_description}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-
-                        <div>
-                          <div className="text-xs text-muted-foreground mb-1">
-                            Members
-                          </div>
-                          <div className="flex -space-x-2 overflow-hidden">
-                            {group.members.slice(0, 3).map((member, i) => (
-                              <Avatar
-                                key={i}
-                                className="h-8 w-8 border-2 border-background"
-                              >
-                                <AvatarFallback>
-                                  {member.name.charAt(0)}
-                                </AvatarFallback>
-                              </Avatar>
-                            ))}
-                            {group.members.length > 3 && (
-                              <div className="flex items-center justify-center h-8 w-8 rounded-full bg-muted text-xs font-medium">
-                                +{group.members.length - 3}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <GroupCard group={group} handleEditGroup={handleEditGroup} />
                 ))}
               </div>
             )}
@@ -564,32 +253,6 @@ export function EventView() {
               event={event}
               existingGroup={selectedGroup}
               onSubmit={handleUpdateGroup}
-              isLoading={isLoading}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-      {/* Register Group Modal */}
-      <Dialog
-        open={isRegisterModalOpen}
-        onOpenChange={(open) => {
-          setIsRegisterModalOpen(open);
-        }}
-      >
-        <DialogContent className="sm:max-w-7xl max-h-[80vh] overflow-scroll">
-          <DialogHeader>
-            <DialogTitle>Register a New Group</DialogTitle>
-            <DialogDescription>
-              Fill out the form to register your group for this event
-            </DialogDescription>
-          </DialogHeader>
-          {event && (
-            <GroupForm
-              event={event}
-              onSubmit={async (values) => {
-                await handleRegisterGroup(values);
-                setIsRegisterModalOpen(false);
-              }}
               isLoading={isLoading}
             />
           )}
