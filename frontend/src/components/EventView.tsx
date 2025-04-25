@@ -320,38 +320,36 @@ export function EventView() {
   return (
     <>
       <div className="bg-gradient-to-b from-background to-background/90 flex flex-col">
-        <main className="container flex-1 py-6 space-y-8">
+        <div className="container flex-1 sm:py-6 space-y-8">
           {/* Event Details Card */}
           <Card className="shadow-md bg-card/50 backdrop-blur-sm event-card">
-            <CardContent>
-              <div className="grid gap-6 md:grid-cols-2">
-                <div>
-                  <h2 className="text-2xl font-bold mb-4">{event.name}</h2>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                      <span>{formatDate(event.date_time)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span>{event.location}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      <span>Maximum Group Size: {event.group_size_limit}</span>
-                    </div>
+            <CardContent className="flex flex-col space-y-3 sm:grid sm:gap-6 sm:grid-cols-2">
+              <div>
+                <h2 className="text-2xl font-bold mb-4">{event.name}</h2>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                    <span>{formatDate(event.date_time)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span>{event.location}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <span>Maximum Group Size: {event.group_size_limit}</span>
                   </div>
                 </div>
-                <div className="flex items-center justify-end">
-                  <Button
-                    size="lg"
-                    className="px-8"
-                    onClick={() => setIsRegisterModalOpen(true)}
-                  >
-                    Register a Group
-                    <ChevronRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
+              </div>
+              <div className="flex items-center sm:justify-end">
+                <Button
+                  size="lg"
+                  className="px-8 w-full sm:w-fit"
+                  onClick={() => setIsRegisterModalOpen(true)}
+                >
+                  Register a Group
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -539,7 +537,7 @@ export function EventView() {
               </div>
             )}
           </ScrollArea>
-        </main>
+        </div>
       </div>
       {/* Edit Group Dialog */}
       <Dialog
