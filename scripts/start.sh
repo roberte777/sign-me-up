@@ -15,8 +15,7 @@ fi
 # 3. Fix ownership & perms on the newly-created DB
 echo "Fixing database file ownership..."
 chown www-data:www-data /data/events.db     # reassign DB file
-# chmod 664 /data/events.db                   # owner & group writable
-chmod 755 /data/events.db                   # owner & group writable
+chmod 664 /data/events.db                   # owner & group writable
 
 # 4. Continue with nginx & backend startup...
 echo "Testing Nginx configuration..."
