@@ -15,6 +15,7 @@ import { Route as CreateImport } from './routes/create'
 import { Route as IndexImport } from './routes/index'
 import { Route as EventEventIdIndexImport } from './routes/event/$eventId/index'
 import { Route as EventEventIdRegisterImport } from './routes/event/$eventId/register'
+import { Route as EventEventIdEditImport } from './routes/event/$eventId/edit'
 
 // Create/Update Routes
 
@@ -42,6 +43,12 @@ const EventEventIdRegisterRoute = EventEventIdRegisterImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const EventEventIdEditRoute = EventEventIdEditImport.update({
+  id: '/event/$eventId/edit',
+  path: '/event/$eventId/edit',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -58,6 +65,13 @@ declare module '@tanstack/react-router' {
       path: '/create'
       fullPath: '/create'
       preLoaderRoute: typeof CreateImport
+      parentRoute: typeof rootRoute
+    }
+    '/event/$eventId/edit': {
+      id: '/event/$eventId/edit'
+      path: '/event/$eventId/edit'
+      fullPath: '/event/$eventId/edit'
+      preLoaderRoute: typeof EventEventIdEditImport
       parentRoute: typeof rootRoute
     }
     '/event/$eventId/register': {
@@ -82,6 +96,7 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
+  '/event/$eventId/edit': typeof EventEventIdEditRoute
   '/event/$eventId/register': typeof EventEventIdRegisterRoute
   '/event/$eventId': typeof EventEventIdIndexRoute
 }
@@ -89,6 +104,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
+  '/event/$eventId/edit': typeof EventEventIdEditRoute
   '/event/$eventId/register': typeof EventEventIdRegisterRoute
   '/event/$eventId': typeof EventEventIdIndexRoute
 }
@@ -97,19 +113,31 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
+  '/event/$eventId/edit': typeof EventEventIdEditRoute
   '/event/$eventId/register': typeof EventEventIdRegisterRoute
   '/event/$eventId/': typeof EventEventIdIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/create' | '/event/$eventId/register' | '/event/$eventId'
+  fullPaths:
+    | '/'
+    | '/create'
+    | '/event/$eventId/edit'
+    | '/event/$eventId/register'
+    | '/event/$eventId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/create' | '/event/$eventId/register' | '/event/$eventId'
+  to:
+    | '/'
+    | '/create'
+    | '/event/$eventId/edit'
+    | '/event/$eventId/register'
+    | '/event/$eventId'
   id:
     | '__root__'
     | '/'
     | '/create'
+    | '/event/$eventId/edit'
     | '/event/$eventId/register'
     | '/event/$eventId/'
   fileRoutesById: FileRoutesById
@@ -118,6 +146,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CreateRoute: typeof CreateRoute
+  EventEventIdEditRoute: typeof EventEventIdEditRoute
   EventEventIdRegisterRoute: typeof EventEventIdRegisterRoute
   EventEventIdIndexRoute: typeof EventEventIdIndexRoute
 }
@@ -125,6 +154,7 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CreateRoute: CreateRoute,
+  EventEventIdEditRoute: EventEventIdEditRoute,
   EventEventIdRegisterRoute: EventEventIdRegisterRoute,
   EventEventIdIndexRoute: EventEventIdIndexRoute,
 }
@@ -141,6 +171,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/create",
+        "/event/$eventId/edit",
         "/event/$eventId/register",
         "/event/$eventId/"
       ]
@@ -150,6 +181,9 @@ export const routeTree = rootRoute
     },
     "/create": {
       "filePath": "create.tsx"
+    },
+    "/event/$eventId/edit": {
+      "filePath": "event/$eventId/edit.tsx"
     },
     "/event/$eventId/register": {
       "filePath": "event/$eventId/register.tsx"

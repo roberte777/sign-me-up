@@ -7,12 +7,16 @@ import {
   CardTitle,
 } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
 import { BriefcaseIcon, EditIcon, UsersIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Link } from "@tanstack/react-router";
 
-type GroupCardProps = { group: Group; handleEditGroup: (group: Group) => void };
-export function GroupCard({ group, handleEditGroup }: GroupCardProps) {
+type GroupCardProps = {
+  group: Group;
+  eventId: string;
+};
+
+export function GroupCard({ group, eventId }: GroupCardProps) {
   return (
     <Card key={group.id} className="overflow-hidden h-full flex flex-col">
       <CardHeader className="pb-3">
@@ -27,14 +31,14 @@ export function GroupCard({ group, handleEditGroup }: GroupCardProps) {
           >
             {group.accepts_others ? "Open" : "Closed"}
           </Badge>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => handleEditGroup(group)}
+          <Link
+            to="/event/$eventId/edit"
+            params={{ eventId }}
+            search={{ groupId: group.id }}
+            className="h-8 w-8 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
           >
             <EditIcon className="h-4 w-4" />
-          </Button>
+          </Link>
         </div>
         <CardTitle className="text-xl">{group.group_name}</CardTitle>
         <CardDescription className="mt-1 flex items-center gap-1">

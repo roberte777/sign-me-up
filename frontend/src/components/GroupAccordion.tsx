@@ -4,18 +4,19 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { type Group } from "@/lib/api";
 import { ChevronDown, Edit, Briefcase } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 // Custom accordion component for group display
 export function GroupAccordion({
   group,
   isOpen,
   onToggle,
-  onEdit,
+  eventId,
 }: {
   group: Group;
   isOpen: boolean;
   onToggle: () => void;
-  onEdit: () => void;
+  eventId: string;
 }) {
   return (
     <div className="border rounded-lg mb-4">
@@ -41,17 +42,16 @@ export function GroupAccordion({
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent accordion toggle when clicking edit
-              onEdit();
-            }}
+          <Link
+            to="/event/$eventId/edit"
+            params={{ eventId }}
+            search={{ groupId: group.id }}
+            onClick={(e) => e.stopPropagation()} // Prevent accordion toggle
+            className="text-sm font-medium inline-flex h-8 items-center justify-center rounded-md bg-transparent px-3 py-1.5 transition-colors hover:bg-accent hover:text-accent-foreground"
           >
             <Edit className="h-4 w-4 mr-2" />
             Edit
-          </Button>
+          </Link>
           <Button
             variant="ghost"
             size="icon"
