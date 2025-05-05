@@ -69,11 +69,6 @@ RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default &
     rm -f /etc/nginx/sites-enabled/default.conf
 COPY ./scripts/schema.sql /app/
 
-# Initialize database
-RUN mkdir -p /data && \
-    sqlite3 /data/events.db < /app/schema.sql && \
-    chown -R www-data:www-data /data
-
 # Set environment variables
 ENV DATABASE_URL=sqlite:/data/events.db
 ENV SERVER_HOST=127.0.0.1
