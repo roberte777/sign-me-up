@@ -88,7 +88,7 @@ function EditGroup() {
   }
 
   return (
-    <div className="container max-w-4xl py-8 mx-auto">
+    <div className="container max-w-4xl py-2 sm:py-8 mx-auto">
       <div className="mb-8">
         <Link
           to="/event/$eventId"

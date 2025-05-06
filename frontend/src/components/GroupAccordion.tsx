@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { type Group, GroupAPI } from "@/lib/api";
-import { ChevronDown, Edit, Briefcase, Trash2 } from "lucide-react";
+import { ChevronDown, Edit, Briefcase, Trash2, UsersIcon } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { DeleteGroupDialog } from "./DeleteGroupDialog";
 
@@ -60,11 +60,12 @@ export function GroupAccordion({
             {group.accepts_others ? "Open" : "Closed"}
           </Badge>
           <h3 className="font-medium">{group.group_name}</h3>
-          <span className="text-sm text-muted-foreground">
-            {group.members.length} members
-          </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center sm:gap-2">
+          <div className="text-sm font-medium inline-flex h-8 items-center justify-center px-3 py-1.5">
+          <UsersIcon className="h-4 w-4 mr-2"/>
+          <span>{group.members.length}</span>
+          </div>
           <Link
             to="/event/$eventId/edit"
             params={{ eventId }}
@@ -72,8 +73,10 @@ export function GroupAccordion({
             onClick={(e) => e.stopPropagation()} // Prevent accordion toggle
             className="text-sm font-medium inline-flex h-8 items-center justify-center rounded-md bg-transparent px-3 py-1.5 transition-colors hover:bg-accent hover:text-accent-foreground"
           >
-            <Edit className="h-4 w-4 mr-2" />
+            <Edit className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:block">
             Edit
+            </span>
           </Link>
           <Button
             variant="ghost"

@@ -6,6 +6,7 @@ default:
 init-db:
     mkdir -p sqlite_data
     sqlite3 sqlite_data/events.db < ./scripts/schema.sql
+    sqlite3 sqlite_data/events.db < ./scripts/seed.sql
     @echo "Development database initialized!"
 
 # Start development database in Docker
