@@ -11,6 +11,7 @@ pub struct Event {
     pub name: String,
     pub date_time: DateTime<Utc>,
     pub group_size_limit: i64,
+    pub max_participants: i64,
     pub location: String,
     pub created_at: Option<DateTime<Utc>>,
 }
@@ -21,6 +22,7 @@ pub struct CreateEventRequest {
     pub name: String,
     pub date_time: DateTime<Utc>,
     pub group_size_limit: i64,
+    pub max_participants: i64,
     pub location: String,
 }
 

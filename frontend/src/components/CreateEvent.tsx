@@ -33,6 +33,7 @@ export function CreateEvent() {
       name: "",
       date_time: "",
       group_size_limit: 5,
+      max_participants: 50,
       location: "",
     },
   });
@@ -120,6 +121,32 @@ export function CreateEvent() {
                     </FormControl>
                     <FormDescription>
                       Maximum number of people allowed in a group.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="max_participants"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Maximum Total Participants</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={1000}
+                        {...field}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value, 10);
+                            field.onChange(value);
+                        }}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Maximum total number of participants allowed across all groups.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

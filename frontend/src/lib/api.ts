@@ -14,6 +14,7 @@ export interface Event {
   name: string;
   date_time: string;
   group_size_limit: number;
+  max_participants: number;
   location: string;
   created_at: string;
 }
@@ -41,6 +42,7 @@ export interface CreateEventData {
   name: string;
   date_time: string;
   group_size_limit: number;
+  max_participants: number;
   location: string;
 }
 

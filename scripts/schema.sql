@@ -8,7 +8,8 @@ CREATE TABLE events (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     date_time DATETIME NOT NULL,
-    group_size_limit INTEGER NOT NULL,
+    group_size_limit INTEGER NOT NULL CHECK (group_size_limit > 0),
+    max_participants INTEGER NOT NULL CHECK (max_participants > 0),
     location TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

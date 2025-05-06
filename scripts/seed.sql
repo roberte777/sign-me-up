@@ -4,8 +4,8 @@
 -- DROP TABLE IF EXISTS events;
 
 -- Seed data for events table
-INSERT INTO events (id, name, date_time, group_size_limit, location)
-VALUES ('event-2023-12-01', 'Winter Hackathon 2023', '2023-12-01 09:00:00', 5, 'Tech Campus Building A');
+INSERT INTO events (id, name, date_time, group_size_limit, max_participants, location)
+VALUES ('event-2023-12-01', 'Winter Hackathon 2023', '2023-12-01 09:00:00', 5, 100, 'Tech Campus Building A');
 
 -- Seed data for groups table
 INSERT INTO groups (event_id, creator_name, creator_email, group_name, accepts_others, project_description) VALUES

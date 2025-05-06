@@ -58,10 +58,8 @@ function EditGroup() {
       // Navigate back to event page after successful update
       navigate({ to: "/event/$eventId", params: { eventId } });
     } catch (error) {
-      console.error("Failed to update group:", error);
-      setError("Failed to update group. Please try again.");
-    } finally {
       setIsLoading(false);
+      throw(error);
     }
   };
 

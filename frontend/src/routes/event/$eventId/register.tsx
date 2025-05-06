@@ -25,11 +25,9 @@ function RouteComponent() {
       // Set active tab to participants to ensure we're showing the groups
       return true;
     } catch (error) {
-      console.error("Failed to register group:", error);
-      alert("Failed to register group. Please try again.");
-      return false;
-    } finally {
       setIsLoading(false);
+      throw(error);
+      return false;
     }
   };
 

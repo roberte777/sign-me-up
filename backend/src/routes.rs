@@ -75,16 +75,22 @@ async fn create_event(
     State(pool): State<DbPool>,
     Json(event): Json<CreateEventRequest>,
 ) -> Result<Json<Event>> {
+    // Validate max_participants
+    if event.max_participants <= 0 {
+        return Err(AppError::BadRequest("max_participants must be greater than 0".into()));
+    }
+
     let event_id = Uuid::new_v4();
     let result = sqlx::query_as::<_, Event>(
-        "INSERT INTO events (id, name, date_time, group_size_limit, location) 
-         VALUES (?, ?, ?, ?, ?) 
+        "INSERT INTO events (id, name, date_time, group_size_limit, max_participants, location) 
+         VALUES (?, ?, ?, ?, ?, ?) 
          RETURNING *",
     )
     .bind(event_id.to_string())
     .bind(&event.name)
     .bind(event.date_time)
     .bind(event.group_size_limit)
+    .bind(event.max_participants)
     .bind(&event.location)
     .fetch_one(&pool)
     .await
@@ -122,15 +128,21 @@ async fn update_event(
     Path(id): Path<String>,
     Json(event): Json<CreateEventRequest>,
 ) -> Result<Json<Event>> {
+    // Validate max_participants
+    if event.max_participants <= 0 {
+        return Err(AppError::BadRequest("max_participants must be greater than 0".into()));
+    }
+
     let result = sqlx::query_as::<_, Event>(
         "UPDATE events 
-         SET name = ?, date_time = ?, group_size_limit = ?, location = ?
+         SET name = ?, date_time = ?, group_size_limit = ?, max_participants = ?, location = ?
          WHERE id = ?
          RETURNING *",
     )
     .bind(&event.name)
     .bind(event.date_time)
     .bind(event.group_size_limit)
+    .bind(event.max_participants)
     .bind(&event.location)
     .bind(&id)
     .fetch_optional(&pool)
@@ -233,7 +245,7 @@ async fn create_group(
         )));
     }
 
-    // Get the event to check group size limit
+    // Get the event to check group size limit and max participants
     let event = sqlx::query_as::<_, Event>("SELECT * FROM events WHERE id = ?")
         .bind(&group.event_id)
         .fetch_one(&mut *tx)
@@ -243,8 +255,31 @@ async fn create_group(
     // Check if the new member count would exceed the group size limit
     if group.members.len() as i64 > event.group_size_limit {
         return Err(AppError::BadRequest(format!(
-            "Group size cannot exceed the event limit of {} members",
+            "Group size cannot exceed the event limit of {} members per group",
             event.group_size_limit
+        )));
+    }
+
+    // Get current total participants count
+    let current_total_participants: i64 = sqlx::query(
+        "SELECT COUNT(*) FROM group_members 
+         WHERE group_id IN (SELECT id FROM groups WHERE event_id = ?)"
+    )
+    .bind(&group.event_id)
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(AppError::Database)?
+    .get(0);
+
+    // Check if adding new members would exceed max participants
+    let new_total = current_total_participants + group.members.len() as i64;
+    if new_total > event.max_participants {
+        return Err(AppError::BadRequest(format!(
+            "Cannot add group: would exceed event's maximum participant limit of {}. Current participants: {}, New group size: {}, Total would be: {}",
+            event.max_participants,
+            current_total_participants,
+            group.members.len(),
+            new_total
         )));
     }
 
@@ -332,7 +367,7 @@ async fn update_group(
         }
     };
 
-    // Get the event to check group size limit
+    // Get the event to check group size limit and max participants
     let event = sqlx::query_as::<_, Event>("SELECT * FROM events WHERE id = ?")
         .bind(&group.event_id)
         .fetch_one(&mut *tx)
@@ -342,8 +377,32 @@ async fn update_group(
     // Check if the new member count would exceed the group size limit
     if update.members.len() as i64 > event.group_size_limit {
         return Err(AppError::BadRequest(format!(
-            "Group size cannot exceed the event limit of {} members",
+            "Group size cannot exceed the event limit of {} members per group",
             event.group_size_limit
+        )));
+    }
+
+    // Get current total participants count excluding this group's members
+    let current_total_participants: i64 = sqlx::query(
+        "SELECT COUNT(*) FROM group_members 
+         WHERE group_id IN (SELECT id FROM groups WHERE event_id = ? AND id != ?)"
+    )
+    .bind(&group.event_id)
+    .bind(group_id)
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(AppError::Database)?
+    .get(0);
+
+    // Check if updating members would exceed max participants
+    let new_total = current_total_participants + update.members.len() as i64;
+    if new_total > event.max_participants {
+        return Err(AppError::BadRequest(format!(
+            "Cannot update group: would exceed event's maximum participant limit of {}. Current participants (excluding this group): {}, New group size: {}, Total would be: {}",
+            event.max_participants,
+            current_total_participants,
+            update.members.len(),
+            new_total
         )));
     }
 

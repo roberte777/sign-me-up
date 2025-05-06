@@ -30,6 +30,9 @@ export function EventView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
+  // Calculate total participants
+  const totalParticipants = groups.reduce((total, group) => total + (group.members?.length || 0), 0);
+
   const fetchGroups = useCallback(async () => {
     try {
       const groupsData = await GroupAPI.getGroups(eventId);
@@ -96,8 +99,8 @@ export function EventView() {
         {/* Event Details Card */}
         <EventDetails
           eventId={eventId}
-          fetchGroups={fetchGroups}
           event={event}
+          totalParticipants={totalParticipants}
         />
 
         {/* Groups Table */}
