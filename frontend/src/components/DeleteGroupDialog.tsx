@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Group } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTitle } from "./ui/alert";
 
 interface DeleteGroupDialogProps {
   group: Group;
@@ -27,14 +29,26 @@ export function DeleteGroupDialog({
 }: DeleteGroupDialogProps) {
   const [confirmText, setConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Reset error and confirm text when dialog opens/closes
+  useEffect(() => {
+    if (open) {
+      setError(null);
+      setConfirmText("");
+    }
+  }, [open]);
   
   const handleDelete = async () => {
     setIsDeleting(true);
+    setError(null);
+    
     try {
       await onConfirm();
       onOpenChange(false);
     } catch (error) {
       console.error("Failed to delete group:", error);
+      setError("Failed to delete group. Please try again later.");
     } finally {
       setIsDeleting(false);
     }
@@ -53,6 +67,14 @@ export function DeleteGroupDialog({
             "{group.group_name}" and remove all members from it.
           </DialogDescription>
         </DialogHeader>
+        
+        {error && (
+          <Alert variant="destructive" className="mt-2">
+            <AlertTitle>Uh Oh!</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
         <div className="space-y-4 py-4">
           <p className="text-sm text-muted-foreground">
             To confirm, type the name of the group: <strong>{group.group_name}</strong>

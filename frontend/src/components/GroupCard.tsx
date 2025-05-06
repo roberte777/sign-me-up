@@ -35,6 +35,8 @@ export function GroupCard({ group, eventId, onDeleteSuccess }: GroupCardProps) {
       }
     } catch (error) {
       console.error("Failed to delete group:", error);
+      // Rethrow the error so it can be caught by the dialog
+      throw error;
     }
   };
 
