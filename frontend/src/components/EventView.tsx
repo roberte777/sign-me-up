@@ -184,13 +184,19 @@ export function EventView() {
                   isOpen={isGroupExpanded(group.id)}
                   onToggle={() => toggleGroupExpansion(group.id)}
                   eventId={eventId}
+                  onDeleteSuccess={fetchGroups}
                 />
               ))}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredGroups.map((group) => (
-                <GroupCard key={group.id} group={group} eventId={eventId} />
+                <GroupCard 
+                  key={group.id} 
+                  group={group} 
+                  eventId={eventId}
+                  onDeleteSuccess={fetchGroups}
+                />
               ))}
             </div>
           )}

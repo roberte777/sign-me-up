@@ -91,5 +91,9 @@ export const GroupAPI = {
     const { data } = await api.get<Group>(`/groups/${groupId}`);
     return data;
   },
+
+  deleteGroup: async (groupId: number): Promise<void> => {
+    await api.delete(`/groups/${groupId}`);
+  },
 };
 

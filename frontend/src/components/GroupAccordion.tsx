@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { type Group } from "@/lib/api";
-import { ChevronDown, Edit, Briefcase } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { type Group, GroupAPI } from "@/lib/api";
+import { ChevronDown, Edit, Briefcase, Trash2 } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { DeleteGroupDialog } from "./DeleteGroupDialog";
 
 // Custom accordion component for group display
 export function GroupAccordion({
@@ -12,12 +14,31 @@ export function GroupAccordion({
   isOpen,
   onToggle,
   eventId,
+  onDeleteSuccess,
 }: {
   group: Group;
   isOpen: boolean;
   onToggle: () => void;
   eventId: string;
+  onDeleteSuccess?: () => void;
 }) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleDeleteGroup = async () => {
+    try {
+      await GroupAPI.deleteGroup(group.id);
+      // Call the callback if provided, otherwise fall back to page navigation
+      if (onDeleteSuccess) {
+        onDeleteSuccess();
+      } else {
+        navigate({ to: "/event/$eventId", params: { eventId }, replace: true });
+      }
+    } catch (error) {
+      console.error("Failed to delete group:", error);
+    }
+  };
+
   return (
     <div className="border rounded-lg mb-4">
       {/* Accordion Header - entire header is clickable */}
@@ -52,6 +73,18 @@ export function GroupAccordion({
             <Edit className="h-4 w-4 mr-2" />
             Edit
           </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent accordion toggle
+              setDeleteDialogOpen(true);
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+            <span className="sr-only">Delete group</span>
+          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -128,6 +161,14 @@ export function GroupAccordion({
           </div>
         </div>
       </div>
+
+      {/* Delete Group Dialog */}
+      <DeleteGroupDialog
+        group={group}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteGroup}
+      />
     </div>
   );
 }

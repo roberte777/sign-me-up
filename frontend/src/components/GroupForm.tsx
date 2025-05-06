@@ -99,6 +99,8 @@ export function GroupForm({
             // Extract error message from the API response
             const errorMessage = e.response?.data?.error?.message || e.message || "An error occurred while submitting the form";
             setError(errorMessage);
+            // Scroll to top when there's an error
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }
         })}
         className="space-y-8"
@@ -319,25 +321,6 @@ export function GroupForm({
             )}
           </div>
         </div>
-
-        {error && (
-          <div className="bg-destructive/15 text-destructive p-4 rounded-md space-y-2">
-            <p className="text-sm font-medium">Unable to {existingGroup ? 'update' : 'create'} group:</p>
-            <p className="text-sm">{error}</p>
-            {error.includes('maximum participant limit') && (
-              <p className="text-sm mt-2">
-                The event has reached its maximum capacity of {event.max_participants} participants.
-                Please reduce the number of members in your group or try again later.
-              </p>
-            )}
-            {error.includes('group size limit') && (
-              <p className="text-sm mt-2">
-                Each group can have a maximum of {event.group_size_limit} members.
-                Please reduce the number of members in your group.
-              </p>
-            )}
-          </div>
-        )}
 
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading
