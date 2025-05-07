@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { BriefcaseIcon, EditIcon, Trash2Icon, UsersIcon } from "lucide-react";
+import { BriefcaseIcon, EditIcon, Trash2Icon } from "lucide-react";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "./ui/button";
@@ -55,9 +55,7 @@ export function GroupCard({ group, eventId, onDeleteSuccess }: GroupCardProps) {
             {group.accepts_others ? "Open" : "Closed"}
           </Badge>
           <CardTitle className="text-xl">{group.group_name}</CardTitle>
-          <CardDescription>
-            {group.members.length} members
-          </CardDescription>
+          <CardDescription>{group.members.length} members</CardDescription>
         </div>
         <div className="flex gap-1">
           <Link
