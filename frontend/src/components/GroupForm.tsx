@@ -97,26 +97,30 @@ export function GroupForm({
           } catch (e: any) {
             console.error(e);
             // Extract error message from the API response
-            const errorMessage = e.response?.data?.error?.message || e.message || "An error occurred while submitting the form";
+            const errorMessage =
+              e.response?.data?.error?.message ||
+              e.message ||
+              "An error occurred while submitting the form";
             setError(errorMessage);
             // Scroll to top when there's an error
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: "smooth" });
           }
         })}
         className="space-y-8"
       >
         {error && (
           <div className="bg-destructive/15 text-destructive p-4 rounded-md space-y-2">
-            <p className="text-sm font-medium">Unable to {existingGroup ? 'update' : 'create'} group:</p>
+            <p className="text-sm font-medium">
+              Unable to {existingGroup ? "update" : "create"} group:
+            </p>
             <p className="text-sm">{error}</p>
-            {error.includes('maximum participant limit') && (
+            {error.includes("maximum participant limit") && (
               <div className="mt-2 space-y-2">
                 <p className="text-sm">
-                  The event has reached its maximum capacity of {event.max_participants} participants.
+                  The event has reached its maximum capacity of{" "}
+                  {event.max_participants} participants.
                 </p>
-                <p className="text-sm">
-                  Please try one of the following:
-                </p>
+                <p className="text-sm">Please try one of the following:</p>
                 <ul className="text-sm list-disc list-inside space-y-1">
                   <li>Reduce the number of members in your group</li>
                   <li>Check if any existing groups have space</li>
@@ -124,10 +128,11 @@ export function GroupForm({
                 </ul>
               </div>
             )}
-            {error.includes('group size limit') && (
+            {error.includes("group size limit") && (
               <div className="mt-2 space-y-2">
                 <p className="text-sm">
-                  Each group can have a maximum of {event.group_size_limit} members.
+                  Each group can have a maximum of {event.group_size_limit}{" "}
+                  members.
                 </p>
                 <p className="text-sm">
                   Please reduce the number of members in your group to continue.
@@ -243,7 +248,9 @@ export function GroupForm({
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Group Members</h3>
               <div className="text-sm text-muted-foreground space-y-1">
-                <div>{memberCount} / {event.group_size_limit} members per group</div>
+                <div>
+                  {memberCount} / {event.group_size_limit} members per group
+                </div>
                 <div>Event max participants: {event.max_participants}</div>
               </div>
             </div>

@@ -141,12 +141,13 @@ export function CreateEvent() {
                         {...field}
                         onChange={(e) => {
                           const value = parseInt(e.target.value, 10);
-                            field.onChange(value);
+                          field.onChange(value);
                         }}
                       />
                     </FormControl>
                     <FormDescription>
-                      Maximum total number of participants allowed across all groups.
+                      Maximum total number of participants allowed across all
+                      groups.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

@@ -45,7 +45,9 @@ export function EventDetails({
                 <span>
                   Participants: {totalParticipants} / {event.max_participants}
                   {totalParticipants >= event.max_participants && (
-                    <span className="text-destructive text-xs ml-2">(Event Full)</span>
+                    <span className="text-destructive text-xs ml-2">
+                      (Event Full)
+                    </span>
                   )}
                 </span>
               </div>
@@ -53,8 +55,8 @@ export function EventDetails({
           </div>
           <div className="flex items-center sm:justify-end">
             <Link to="/event/$eventId/register" params={{ eventId: eventId }}>
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="px-8 w-full sm:w-fit"
                 disabled={totalParticipants >= event.max_participants}
               >

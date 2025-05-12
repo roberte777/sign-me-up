@@ -63,8 +63,8 @@ export function GroupAccordion({
         </div>
         <div className="flex items-center sm:gap-2">
           <div className="text-sm font-medium inline-flex h-8 items-center justify-center px-3 py-1.5">
-          <UsersIcon className="h-4 w-4 mr-2"/>
-          <span>{group.members.length}</span>
+            <UsersIcon className="h-4 w-4 mr-2" />
+            <span>{group.members.length}</span>
           </div>
           <Link
             to="/event/$eventId/edit"
@@ -74,14 +74,12 @@ export function GroupAccordion({
             className="text-sm font-medium inline-flex h-8 items-center justify-center rounded-md bg-transparent px-3 py-1.5 transition-colors hover:bg-accent hover:text-accent-foreground"
           >
             <Edit className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:block">
-            Edit
-            </span>
+            <span className="hidden sm:block">Edit</span>
           </Link>
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+            className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer"
             onClick={(e) => {
               e.stopPropagation(); // Prevent accordion toggle
               setDeleteDialogOpen(true);
@@ -93,7 +91,7 @@ export function GroupAccordion({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className="h-8 w-8 cursor-pointer"
             onClick={(e) => {
               e.stopPropagation(); // Prevent double toggle
               onToggle();

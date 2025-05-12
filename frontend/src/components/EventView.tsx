@@ -30,7 +30,10 @@ export function EventView() {
   const [statusFilter, setStatusFilter] = useState("all");
 
   // Calculate total participants
-  const totalParticipants = groups.reduce((total, group) => total + (group.members?.length || 0), 0);
+  const totalParticipants = groups.reduce(
+    (total, group) => total + (group.members?.length || 0),
+    0,
+  );
 
   const fetchGroups = useCallback(async () => {
     try {
@@ -139,7 +142,7 @@ export function EventView() {
                 <Button
                   variant={viewMode === "grid" ? "default" : "outline"}
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-8 w-8 cursor-pointer"
                   onClick={() => setViewMode("grid")}
                 >
                   <LayoutGrid className="h-4 w-4" />
@@ -148,7 +151,7 @@ export function EventView() {
                 <Button
                   variant={viewMode === "list" ? "default" : "outline"}
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-8 w-8 cursor-pointer"
                   onClick={() => setViewMode("list")}
                 >
                   <List className="h-4 w-4" />

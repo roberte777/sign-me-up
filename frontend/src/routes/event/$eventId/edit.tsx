@@ -59,7 +59,7 @@ function EditGroup() {
       navigate({ to: "/event/$eventId", params: { eventId } });
     } catch (error) {
       setIsLoading(false);
-      throw(error);
+      throw error;
     }
   };
 

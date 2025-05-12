@@ -26,8 +26,7 @@ function RouteComponent() {
       return true;
     } catch (error) {
       setIsLoading(false);
-      throw(error);
-      return false;
+      throw error;
     }
   };
 

@@ -30,7 +30,7 @@ export function DeleteGroupDialog({
   const [confirmText, setConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Reset error and confirm text when dialog opens/closes
   useEffect(() => {
     if (open) {
@@ -38,11 +38,11 @@ export function DeleteGroupDialog({
       setConfirmText("");
     }
   }, [open]);
-  
+
   const handleDelete = async () => {
     setIsDeleting(true);
     setError(null);
-    
+
     try {
       await onConfirm();
       onOpenChange(false);
@@ -67,17 +67,18 @@ export function DeleteGroupDialog({
             "{group.group_name}" and remove all members from it.
           </DialogDescription>
         </DialogHeader>
-        
+
         {error && (
           <Alert variant="destructive" className="mt-2">
             <AlertTitle>Uh Oh!</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        
+
         <div className="space-y-4 py-4">
           <p className="text-sm text-muted-foreground">
-            To confirm, type the name of the group: <strong>{group.group_name}</strong>
+            To confirm, type the name of the group:{" "}
+            <strong>{group.group_name}</strong>
           </p>
           <Input
             value={confirmText}
@@ -106,4 +107,5 @@ export function DeleteGroupDialog({
       </DialogContent>
     </Dialog>
   );
-} 
+}
+
