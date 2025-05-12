@@ -109,8 +109,8 @@ export function GroupAccordion({
 
       {/* Accordion Content */}
       <div
-        className={`accordion-content overflow-scroll transition-all duration-300 ease-in-out ${
-          isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        className={`accordion-content transition-all duration-300 ease-in-out ${
+          isOpen ? "opacity-100" : "max-h-0 opacity-0"
         }`}
       >
         <div className="p-4 border-t bg-card">

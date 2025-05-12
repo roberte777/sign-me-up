@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { EventAPI, GroupAPI, type Event, type Group } from "@/lib/api";
 import { List, LayoutGrid, Users, Search } from "lucide-react";
-import { ScrollArea } from "./ui/scroll-area";
 import { GroupAccordion } from "./GroupAccordion";
 import { EventDetails } from "./EventDetails";
 import { GroupCard } from "./GroupCard";
@@ -160,47 +159,45 @@ export function EventView() {
           </div>
         </div>
 
-        <ScrollArea className="h-[calc(100vh-600px)] pr-3 overflow-hidden">
-          {filteredGroups.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Users
-                  className="h-12 w-12 text-muted-foreground mb-4"
-                  strokeWidth={1.5}
-                />
-                <p className="text-muted-foreground text-center">
-                  {groups.length === 0
-                    ? "No groups have registered yet. Be the first!"
-                    : "No groups match your search criteria."}
-                </p>
-              </CardContent>
-            </Card>
-          ) : viewMode === "list" ? (
-            <div>
-              {filteredGroups.map((group) => (
-                <GroupAccordion
-                  key={group.id}
-                  group={group}
-                  isOpen={isGroupExpanded(group.id)}
-                  onToggle={() => toggleGroupExpansion(group.id)}
-                  eventId={eventId}
-                  onDeleteSuccess={fetchGroups}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredGroups.map((group) => (
-                <GroupCard 
-                  key={group.id} 
-                  group={group} 
-                  eventId={eventId}
-                  onDeleteSuccess={fetchGroups}
-                />
-              ))}
-            </div>
-          )}
-        </ScrollArea>
+        {filteredGroups.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Users
+                className="h-12 w-12 text-muted-foreground mb-4"
+                strokeWidth={1.5}
+              />
+              <p className="text-muted-foreground text-center">
+                {groups.length === 0
+                  ? "No groups have registered yet. Be the first!"
+                  : "No groups match your search criteria."}
+              </p>
+            </CardContent>
+          </Card>
+        ) : viewMode === "list" ? (
+          <div>
+            {filteredGroups.map((group) => (
+              <GroupAccordion
+                key={group.id}
+                group={group}
+                isOpen={isGroupExpanded(group.id)}
+                onToggle={() => toggleGroupExpansion(group.id)}
+                eventId={eventId}
+                onDeleteSuccess={fetchGroups}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredGroups.map((group) => (
+              <GroupCard
+                key={group.id}
+                group={group}
+                eventId={eventId}
+                onDeleteSuccess={fetchGroups}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
