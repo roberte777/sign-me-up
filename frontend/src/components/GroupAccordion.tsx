@@ -107,7 +107,7 @@ export function GroupAccordion({
 
       {/* Accordion Content */}
       <div
-        className={`accordion-content transition-all duration-300 ease-in-out ${
+        className={`accordion-content overflow-auto transition-all duration-300 ease-in-out ${
           isOpen ? "opacity-100" : "max-h-0 opacity-0"
         }`}
       >
